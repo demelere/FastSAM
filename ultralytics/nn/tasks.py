@@ -515,7 +515,7 @@ def torch_safe_load(weight):
     check_suffix(file=weight, suffix='.pt')
     file = attempt_download_asset(weight)  # search online if missing locally
     try:
-        return torch.load(file, map_location='cpu'), file  # load
+        return torch.load(file, map_location='cpu', weights_only=False), file  # load with weights_only=False
     except ModuleNotFoundError as e:  # e.name is missing module name
         if e.name == 'models':
             raise TypeError(
@@ -664,7 +664,6 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
 
         m_ = nn.Sequential(*(m(*args) for _ in range(n))) if n > 1 else m(*args)  # module
         t = str(m)[8:-2].replace('__main__.', '')  # module type
-        m.np = sum(x.numel() for x in m_.parameters())  # number params
         m_.i, m_.f, m_.type = i, f, t  # attach index, 'from' index, type
         if verbose:
             LOGGER.info(f'{i:>3}{str(f):>20}{n_:>3}{m.np:10.0f}  {t:<45}{str(args):<30}')  # print
