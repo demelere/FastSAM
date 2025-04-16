@@ -168,13 +168,15 @@ class FastSAMPrompt:
         fig = plt.gcf()
         plt.draw()
 
-        try:
+        fig.canvas.draw()
+        if hasattr(fig.canvas, 'tostring_rgb'):
             buf = fig.canvas.tostring_rgb()
-        except AttributeError:
-            fig.canvas.draw()
-            buf = fig.canvas.tostring_rgb()
-        cols, rows = fig.canvas.get_width_height()
-        img_array = np.frombuffer(buf, dtype=np.uint8).reshape(rows, cols, 3)
+            cols, rows = fig.canvas.get_width_height()
+            img_array = np.frombuffer(buf, dtype=np.uint8).reshape(rows, cols, 3)
+        else:
+            buf = fig.canvas.buffer_rgba()
+            img_array = np.asarray(buf)
+            img_array = img_array[:, :, :3]
         result = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
         plt.close()
         return result
